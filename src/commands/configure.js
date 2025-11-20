@@ -10,22 +10,22 @@ module.exports = {
       subcommand
         .setName('add-fee')
         .setDescription('Add a fee limit range')
-        .addInteger('min', option => 
+        .addIntegerOption(option => 
           option.setName('min')
             .setDescription('Minimum amount (in Rupiah)')
             .setRequired(true)
         )
-        .addInteger('max', option =>
+        .addIntegerOption(option =>
           option.setName('max')
             .setDescription('Maximum amount (in Rupiah, use 0 for unlimited)')
             .setRequired(true)
         )
-        .addInteger('fee', option =>
+        .addIntegerOption(option =>
           option.setName('fee')
             .setDescription('Fee amount (in Rupiah, use 0 for percentage)')
             .setRequired(true)
         )
-        .addNumber('percentage', option =>
+        .addNumberOption(option =>
           option.setName('percentage')
             .setDescription('Fee percentage (if using percentage instead of fixed fee)')
             .setRequired(false)
@@ -35,7 +35,7 @@ module.exports = {
       subcommand
         .setName('remove-fee')
         .setDescription('Remove a fee limit range')
-        .addInteger('index', option =>
+        .addIntegerOption(option =>
           option.setName('index')
             .setDescription('Index of the fee limit to remove (use /configure list-fees to see)')
             .setRequired(true)
@@ -50,7 +50,7 @@ module.exports = {
       subcommand
         .setName('qris')
         .setDescription('Set the QRIS payment image URL')
-        .addString('url', option =>
+        .addStringOption(option =>
           option.setName('url')
             .setDescription('Direct image URL for QRIS payment method')
             .setRequired(true)
@@ -60,7 +60,7 @@ module.exports = {
       subcommand
         .setName('audit-channel')
         .setDescription('Set the audit log channel')
-        .addChannel('channel', option =>
+        .addChannelOption(option =>
           option.setName('channel')
             .setDescription('Channel for audit logs')
             .setRequired(true)
@@ -70,7 +70,7 @@ module.exports = {
       subcommand
         .setName('ticket-log-channel')
         .setDescription('Set the ticket log channel')
-        .addChannel('channel', option =>
+        .addChannelOption(option =>
           option.setName('channel')
             .setDescription('Channel for ticket logs with read buttons')
             .setRequired(true)

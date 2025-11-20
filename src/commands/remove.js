@@ -5,7 +5,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('remove')
     .setDescription('Remove a member from the current ticket thread')
-    .addUser('user', option =>
+    .addUserOption(option =>
       option.setName('user')
         .setDescription('The user to remove from the ticket')
         .setRequired(true)
