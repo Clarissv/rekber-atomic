@@ -66,16 +66,27 @@ async function handleMemberSelection(interaction) {
       reason: `Ticket created by ${interaction.user.tag}`
     });
 
-    // Add members to thread - bot automatically has access as creator
-    try {
-      await thread.members.add(interaction.user.id);
-      await thread.members.add(otherPartyId);
-      if (process.env.Access_ID) {
-        await thread.members.add(process.env.Access_ID);
+    // Join the thread first (bot must be in thread to add others)
+    await thread.join();
+
+    // Add members to thread with proper error handling
+    const membersToAdd = [
+      interaction.user.id,
+      otherPartyId
+    ];
+    
+    if (process.env.Access_ID && process.env.Access_ID !== interaction.client.user.id) {
+      membersToAdd.push(process.env.Access_ID);
+    }
+
+    for (const memberId of membersToAdd) {
+      try {
+        await thread.members.add(memberId);
+        console.log(`✅ Added member ${memberId} to thread ${thread.id}`);
+      } catch (memberError) {
+        console.error(`❌ Error adding member ${memberId}:`, memberError.message);
+        // Continue with other members
       }
-    } catch (memberError) {
-      console.error('Error adding members to thread:', memberError);
-      // Continue even if some members fail to add
     }
 
     // Create ticket in database
@@ -249,7 +260,7 @@ async function handleCloseTicket(interaction) {
           { name: 'Ticket', value: `${thread}`, inline: true },
           { name: 'Closed By', value: `<@${interaction.user.id}>`, inline: true },
           { name: 'Creator', value: `<@${ticket.creatorId}>`, inline: true },
-          { name: 'Duration', value: this.calculateDuration(ticket.createdAt), inline: true }
+          { name: 'Duration', value: calculateDuration(ticket.createdAt), inline: true }
         )
         .setTimestamp();
 
