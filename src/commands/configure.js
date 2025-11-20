@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
 const GuildConfig = require('../schemas/GuildConfig');
 require('dotenv').config();
 
@@ -87,7 +87,7 @@ module.exports = {
     if (interaction.user.id !== process.env.Access_ID) {
       return await interaction.reply({ 
         content: '❌ Only authorized staff can use this command.', 
-        ephemeral: true 
+        flags: MessageFlags.Ephemeral 
       });
     }
 
@@ -123,7 +123,7 @@ module.exports = {
             .setDescription(`**Range:** ${newFeeLimit.label}\n**Fee:** ${percentage ? `${percentage}%` : `Rp ${fee.toLocaleString('id-ID')}`}`)
             .setTimestamp();
 
-          await interaction.reply({ embeds: [embed], ephemeral: true });
+          await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
           break;
         }
 
@@ -134,7 +134,7 @@ module.exports = {
           if (index < 1 || index > config.feeLimits.length) {
             return await interaction.reply({ 
               content: `❌ Invalid index. Please use a number between 1 and ${config.feeLimits.length}`, 
-              ephemeral: true 
+              flags: MessageFlags.Ephemeral 
             });
           }
 
@@ -147,7 +147,7 @@ module.exports = {
             .setDescription(`**Removed:** ${removed.label}`)
             .setTimestamp();
 
-          await interaction.reply({ embeds: [embed], ephemeral: true });
+          await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
           break;
         }
 
@@ -157,7 +157,7 @@ module.exports = {
           if (config.feeLimits.length === 0) {
             return await interaction.reply({ 
               content: '❌ No fee limits configured yet. Use `/configure add-fee` to add one.', 
-              ephemeral: true 
+              flags: MessageFlags.Ephemeral 
             });
           }
 
@@ -174,7 +174,7 @@ module.exports = {
             .setDescription(feeList)
             .setTimestamp();
 
-          await interaction.reply({ embeds: [embed], ephemeral: true });
+          await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
           break;
         }
 
@@ -189,7 +189,7 @@ module.exports = {
             .setImage(url)
             .setTimestamp();
 
-          await interaction.reply({ embeds: [embed], ephemeral: true });
+          await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
           break;
         }
 
@@ -203,7 +203,7 @@ module.exports = {
             .setDescription(`Audit logs will be sent to ${channel}`)
             .setTimestamp();
 
-          await interaction.reply({ embeds: [embed], ephemeral: true });
+          await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
           break;
         }
 
@@ -217,7 +217,7 @@ module.exports = {
             .setDescription(`Ticket logs will be sent to ${channel}`)
             .setTimestamp();
 
-          await interaction.reply({ embeds: [embed], ephemeral: true });
+          await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
           break;
         }
 
@@ -257,7 +257,7 @@ module.exports = {
             embed.setThumbnail(config.qrisImageUrl);
           }
 
-          await interaction.reply({ embeds: [embed], ephemeral: true });
+          await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
           break;
         }
       }
@@ -265,7 +265,7 @@ module.exports = {
       console.error('Error in configure command:', error);
       await interaction.reply({ 
         content: '❌ An error occurred while processing your request.', 
-        ephemeral: true 
+        flags: MessageFlags.Ephemeral 
       });
     }
   },

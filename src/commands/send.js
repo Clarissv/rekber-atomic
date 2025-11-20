@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, MessageFlags } = require('discord.js');
 const GuildConfig = require('../schemas/GuildConfig');
 require('dotenv').config();
 
@@ -12,7 +12,7 @@ module.exports = {
     if (interaction.user.id !== process.env.Access_ID) {
       return await interaction.reply({ 
         content: '❌ Only authorized staff can use this command.', 
-        ephemeral: true 
+        flags: MessageFlags.Ephemeral 
       });
     }
 
@@ -24,7 +24,7 @@ module.exports = {
       if (config.feeLimits.length === 0) {
         return await interaction.reply({ 
           content: '❌ Please configure fee limits first using `/configure add-fee`', 
-          ephemeral: true 
+          flags: MessageFlags.Ephemeral 
         });
       }
 
@@ -64,7 +64,7 @@ module.exports = {
       
       await interaction.reply({ 
         content: '✅ Ticket panel sent successfully!', 
-        ephemeral: true 
+        flags: MessageFlags.Ephemeral 
       });
 
     } catch (error) {

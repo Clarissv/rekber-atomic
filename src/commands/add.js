@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const Ticket = require('../schemas/Ticket');
 
 module.exports = {
@@ -17,7 +17,7 @@ module.exports = {
       if (!interaction.channel.isThread()) {
         return await interaction.reply({ 
           content: '❌ This command can only be used in a ticket thread.', 
-          ephemeral: true 
+          flags: MessageFlags.Ephemeral 
         });
       }
 
@@ -26,7 +26,7 @@ module.exports = {
       if (!ticket) {
         return await interaction.reply({ 
           content: '❌ This is not a valid ticket thread.', 
-          ephemeral: true 
+          flags: MessageFlags.Ephemeral 
         });
       }
 
@@ -46,7 +46,7 @@ module.exports = {
       console.error('Error in add command:', error);
       await interaction.reply({ 
         content: '❌ An error occurred while adding the member.', 
-        ephemeral: true 
+        flags: MessageFlags.Ephemeral 
       });
     }
   }

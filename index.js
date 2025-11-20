@@ -11,7 +11,8 @@ const client = new Client({
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.MessageContent
-  ]
+  ],
+  partials: ['CHANNEL'] // Required for thread access
 });
 
 client.commands = new Collection();

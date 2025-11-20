@@ -1,4 +1,4 @@
-const { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, UserSelectMenuBuilder, ButtonBuilder, ButtonStyle, ChannelType } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, UserSelectMenuBuilder, ButtonBuilder, ButtonStyle, ChannelType, MessageFlags } = require('discord.js');
 const GuildConfig = require('../schemas/GuildConfig');
 const Ticket = require('../schemas/Ticket');
 
@@ -27,14 +27,23 @@ async function handleFeeSelection(interaction) {
 
     const row = new ActionRowBuilder().addComponents(userSelect);
 
-    await interaction.reply({ embeds: [embed], components: [row], ephemeral: true });
+    await interaction.reply({ 
+      embeds: [embed], 
+      components: [row], 
+      flags: MessageFlags.Ephemeral 
+    });
 
   } catch (error) {
     console.error('Error in handleFeeSelection:', error);
-    await interaction.reply({ 
+    const reply = { 
       content: '❌ An error occurred while processing your selection.', 
-      ephemeral: true 
-    });
+      flags: MessageFlags.Ephemeral 
+    };
+    if (interaction.replied || interaction.deferred) {
+      await interaction.followUp(reply);
+    } else {
+      await interaction.reply(reply);
+    }
   }
 }
 
@@ -46,20 +55,28 @@ async function handleMemberSelection(interaction) {
     const config = await GuildConfig.getConfig(guildId);
     const selectedFee = config.feeLimits[feeIndex];
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     // Create private thread
     const threadName = `ticket-${interaction.user.username}-${Date.now()}`;
     const thread = await interaction.channel.threads.create({
       name: threadName,
       type: ChannelType.PrivateThread,
+      invitable: false,
       reason: `Ticket created by ${interaction.user.tag}`
     });
 
-    // Add members to thread
-    await thread.members.add(interaction.user.id);
-    await thread.members.add(otherPartyId);
-    await thread.members.add(process.env.Access_ID);
+    // Add members to thread - bot automatically has access as creator
+    try {
+      await thread.members.add(interaction.user.id);
+      await thread.members.add(otherPartyId);
+      if (process.env.Access_ID) {
+        await thread.members.add(process.env.Access_ID);
+      }
+    } catch (memberError) {
+      console.error('Error adding members to thread:', memberError);
+      // Continue even if some members fail to add
+    }
 
     // Create ticket in database
     await Ticket.createTicket({
@@ -142,9 +159,12 @@ async function handleMemberSelection(interaction) {
 
   } catch (error) {
     console.error('Error in handleMemberSelection:', error);
-    await interaction.editReply({ 
-      content: '❌ An error occurred while creating the ticket.' 
-    });
+    const reply = { content: '❌ An error occurred while creating the ticket. Please check bot permissions.' };
+    if (interaction.deferred) {
+      await interaction.editReply(reply);
+    } else {
+      await interaction.reply({ ...reply, flags: MessageFlags.Ephemeral });
+    }
   }
 }
 
@@ -154,7 +174,7 @@ async function handleCloseTicket(interaction) {
     if (interaction.user.id !== process.env.Access_ID) {
       return await interaction.reply({ 
         content: '❌ Only authorized staff can close tickets.', 
-        ephemeral: true 
+        flags: MessageFlags.Ephemeral 
       });
     }
 
