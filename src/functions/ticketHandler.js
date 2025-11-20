@@ -1,4 +1,4 @@
-const { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, ChannelType } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, UserSelectMenuBuilder, ButtonBuilder, ButtonStyle, ChannelType } = require('discord.js');
 const GuildConfig = require('../schemas/GuildConfig');
 const Ticket = require('../schemas/Ticket');
 
@@ -9,24 +9,6 @@ async function handleFeeSelection(interaction) {
     const config = await GuildConfig.getConfig(guildId);
     const selectedFee = config.feeLimits[feeIndex];
 
-    // Create member selection dropdown
-    const members = await interaction.guild.members.fetch();
-    const memberOptions = members
-      .filter(member => !member.user.bot && member.id !== interaction.user.id)
-      .map(member => ({
-        label: member.user.username,
-        description: member.user.tag,
-        value: member.id
-      }))
-      .slice(0, 25); // Discord limit
-
-    if (memberOptions.length === 0) {
-      return await interaction.reply({ 
-        content: '❌ No other members found in the server.', 
-        ephemeral: true 
-      });
-    }
-
     const embed = new EmbedBuilder()
       .setColor('#0099FF')
       .setTitle('👥 Select Trading Partner')
@@ -36,12 +18,14 @@ async function handleFeeSelection(interaction) {
         'Please select the person you are trading with from the dropdown below.'
       );
 
-    const selectMenu = new StringSelectMenuBuilder()
+    // Use UserSelectMenuBuilder for searchable user selection
+    const userSelect = new UserSelectMenuBuilder()
       .setCustomId(`member_select_${feeIndex}`)
       .setPlaceholder('Select the other party')
-      .addOptions(memberOptions);
+      .setMinValues(1)
+      .setMaxValues(1);
 
-    const row = new ActionRowBuilder().addComponents(selectMenu);
+    const row = new ActionRowBuilder().addComponents(userSelect);
 
     await interaction.reply({ embeds: [embed], components: [row], ephemeral: true });
 
@@ -57,7 +41,7 @@ async function handleFeeSelection(interaction) {
 async function handleMemberSelection(interaction) {
   try {
     const feeIndex = parseInt(interaction.customId.split('_')[2]);
-    const otherPartyId = interaction.values[0];
+    const otherPartyId = interaction.values[0]; // UserSelectMenu returns array of user IDs
     const guildId = interaction.guild.id;
     const config = await GuildConfig.getConfig(guildId);
     const selectedFee = config.feeLimits[feeIndex];

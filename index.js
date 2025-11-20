@@ -85,7 +85,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
   if (interaction.isStringSelectMenu()) {
     if (interaction.customId === 'ticket_fee_select') {
       await handleFeeSelection(interaction);
-    } else if (interaction.customId.startsWith('member_select_')) {
+    }
+  }
+
+  // Handle user select menus
+  if (interaction.isUserSelectMenu()) {
+    if (interaction.customId.startsWith('member_select_')) {
       await handleMemberSelection(interaction);
     }
   }
