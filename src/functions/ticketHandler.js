@@ -69,6 +69,10 @@ async function handleMemberSelection(interaction) {
     // Join the thread first (bot must be in thread to add others)
     await thread.join();
 
+    // Track which members were successfully added
+    const addedMembers = [];
+    const failedMembers = [];
+
     // Add members to thread with proper error handling
     const membersToAdd = [
       interaction.user.id,
@@ -83,9 +87,22 @@ async function handleMemberSelection(interaction) {
       try {
         await thread.members.add(memberId);
         console.log(`✅ Added member ${memberId} to thread ${thread.id}`);
+        addedMembers.push(memberId);
       } catch (memberError) {
         console.error(`❌ Error adding member ${memberId}:`, memberError.message);
-        // Continue with other members
+        failedMembers.push(memberId);
+      }
+    }
+
+    // If the other party couldn't be added, send them a message to join manually
+    if (failedMembers.includes(otherPartyId)) {
+      try {
+        const otherUser = await interaction.guild.members.fetch(otherPartyId);
+        await otherUser.send({
+          content: `🎫 You've been invited to a ticket!\n\nPlease join this thread: https://discord.com/channels/${interaction.guild.id}/${thread.id}\n\n**Ticket created by:** <@${interaction.user.id}>`
+        });
+      } catch (dmError) {
+        console.log('Could not DM user, they will see the mention in thread');
       }
     }
 
@@ -110,6 +127,7 @@ async function handleMemberSelection(interaction) {
         `**Transaction Range:** ${selectedFee.label}\n` +
         `**Middleman Fee:** ${selectedFee.percentage ? `${selectedFee.percentage}%` : `Rp ${selectedFee.fee.toLocaleString('id-ID')}`}\n\n` +
         `A staff member <@${process.env.Access_ID}> has been added to assist you.\n` +
+        (failedMembers.includes(otherPartyId) ? `\n⚠️ <@${otherPartyId}> - Please check your DMs or click this thread to join!\n\n` : '') +
         `Please proceed with your transaction details.`
       )
       .setTimestamp();
@@ -267,10 +285,14 @@ async function handleCloseTicket(interaction) {
       await auditChannel.send({ embeds: [auditEmbed] });
     }
 
-    // Archive and lock the thread after a delay
+    // Lock and archive the thread after a delay (lock first, then archive)
     setTimeout(async () => {
-      await thread.setArchived(true);
-      await thread.setLocked(true);
+      try {
+        await thread.setLocked(true);
+        await thread.setArchived(true);
+      } catch (archiveError) {
+        console.error('Error archiving thread:', archiveError.message);
+      }
     }, 5000);
 
   } catch (error) {
