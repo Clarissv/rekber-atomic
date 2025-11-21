@@ -249,6 +249,11 @@ module.exports = {
                 name: '🎫 Ticket Log Channel', 
                 value: config.ticketLogChannel ? `<#${config.ticketLogChannel}>` : '❌ Not set',
                 inline: true
+              },
+              { 
+                name: '🎫 Ticket System Status', 
+                value: config.ticketSystemOpen === false ? '🔒 Closed' : '✅ Open',
+                inline: true
               }
             )
             .setTimestamp();

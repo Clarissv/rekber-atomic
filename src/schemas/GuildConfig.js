@@ -21,7 +21,8 @@ class GuildConfig {
         feeLimits: [],
         qrisImageUrl: null,
         auditLogChannel: null,
-        ticketLogChannel: null
+        ticketLogChannel: null,
+        ticketSystemOpen: true
       };
       await collection.insertOne(config);
     }
@@ -61,6 +62,15 @@ class GuildConfig {
     await collection.updateOne(
       { guildId },
       { $set: { ticketLogChannel: channelId } },
+      { upsert: true }
+    );
+  }
+
+  static async setTicketSystemStatus(guildId, isOpen) {
+    const collection = this.getCollection();
+    await collection.updateOne(
+      { guildId },
+      { $set: { ticketSystemOpen: isOpen } },
       { upsert: true }
     );
   }

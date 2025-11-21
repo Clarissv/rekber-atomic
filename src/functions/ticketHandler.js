@@ -7,6 +7,15 @@ async function handleFeeSelection(interaction) {
     const feeIndex = parseInt(interaction.values[0].split('_')[1]);
     const guildId = interaction.guild.id;
     const config = await GuildConfig.getConfig(guildId);
+    
+    // Check if ticket system is open
+    if (config.ticketSystemOpen === false) {
+      return await interaction.reply({
+        content: '❌ Ticket system is currently closed. Please try again later.',
+        flags: MessageFlags.Ephemeral
+      });
+    }
+    
     const selectedFee = config.feeLimits[feeIndex];
 
     const embed = new EmbedBuilder()
