@@ -4,10 +4,10 @@ const Ticket = require('../schemas/Ticket');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('add')
-    .setDescription('Add a member to the current ticket thread')
+    .setDescription('Tambahkan member ke thread tiket ini')
     .addUserOption(option =>
       option.setName('user')
-        .setDescription('The user to add to the ticket')
+        .setDescription('User yang akan ditambahkan ke tiket')
         .setRequired(true)
     ),
 
@@ -16,7 +16,7 @@ module.exports = {
       // Check if we're in a thread
       if (!interaction.channel.isThread()) {
         return await interaction.reply({ 
-          content: '❌ This command can only be used in a ticket thread.', 
+          content: '❌ Perintah ini hanya dapat digunakan di thread tiket.', 
           flags: MessageFlags.Ephemeral 
         });
       }
@@ -25,7 +25,7 @@ module.exports = {
       
       if (!ticket) {
         return await interaction.reply({ 
-          content: '❌ This is not a valid ticket thread.', 
+          content: '❌ Ini bukan thread tiket yang valid.', 
           flags: MessageFlags.Ephemeral 
         });
       }
@@ -39,13 +39,13 @@ module.exports = {
       await Ticket.addMember(interaction.channel.id, userToAdd.id);
 
       await interaction.reply({ 
-        content: `✅ ${userToAdd} has been added to this ticket.` 
+        content: `✅ ${userToAdd} telah ditambahkan ke tiket ini.` 
       });
 
     } catch (error) {
       console.error('Error in add command:', error);
       await interaction.reply({ 
-        content: '❌ An error occurred while adding the member.', 
+        content: '❌ Terjadi kesalahan saat menambahkan member.', 
         flags: MessageFlags.Ephemeral 
       });
     }

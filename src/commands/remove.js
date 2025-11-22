@@ -4,10 +4,10 @@ const Ticket = require('../schemas/Ticket');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('remove')
-    .setDescription('Remove a member from the current ticket thread')
+    .setDescription('Hapus member dari thread tiket ini')
     .addUserOption(option =>
       option.setName('user')
-        .setDescription('The user to remove from the ticket')
+        .setDescription('User yang akan dihapus dari tiket')
         .setRequired(true)
     ),
 
@@ -16,7 +16,7 @@ module.exports = {
       // Check if we're in a thread
       if (!interaction.channel.isThread()) {
         return await interaction.reply({ 
-          content: '❌ This command can only be used in a ticket thread.', 
+          content: '❌ Perintah ini hanya dapat digunakan di thread tiket.', 
           flags: MessageFlags.Ephemeral 
         });
       }
@@ -25,7 +25,7 @@ module.exports = {
       
       if (!ticket) {
         return await interaction.reply({ 
-          content: '❌ This is not a valid ticket thread.', 
+          content: '❌ Ini bukan thread tiket yang valid.', 
           flags: MessageFlags.Ephemeral 
         });
       }
@@ -35,7 +35,7 @@ module.exports = {
       // Prevent removing the ticket creator or the other party
       if (userToRemove.id === ticket.creatorId || userToRemove.id === ticket.otherPartyId) {
         return await interaction.reply({ 
-          content: '❌ You cannot remove the ticket creator or the other party from the ticket.', 
+          content: '❌ Anda tidak dapat menghapus pembuat tiket atau pihak lain dari tiket.', 
           flags: MessageFlags.Ephemeral 
         });
       }
@@ -47,14 +47,14 @@ module.exports = {
       await Ticket.removeMember(interaction.channel.id, userToRemove.id);
 
       await interaction.reply({ 
-        content: `✅ ${userToRemove} has been removed from this ticket.` 
+        content: `✅ ${userToRemove} telah dihapus dari tiket ini.` 
       });
 
     } catch (error) {
       console.error('Error in remove command:', error);
       await interaction.reply({ 
-        content: '❌ An error occurred while removing the member.', 
-        ephemeral: true 
+        content: '❌ Terjadi kesalahan saat menghapus member.', 
+        flags: MessageFlags.Ephemeral 
       });
     }
   }

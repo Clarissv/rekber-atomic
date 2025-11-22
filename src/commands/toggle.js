@@ -5,14 +5,14 @@ require('dotenv').config();
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('toggle')
-    .setDescription('Open or close the ticket system')
+    .setDescription('Buka atau tutup sistem tiket')
     .addStringOption(option =>
       option.setName('status')
-        .setDescription('Set ticket system status')
+        .setDescription('Atur status sistem tiket')
         .setRequired(true)
         .addChoices(
-          { name: 'Open - Members can create tickets', value: 'open' },
-          { name: 'Close - Members cannot create tickets', value: 'close' }
+          { name: 'Buka - Member dapat membuat tiket', value: 'open' },
+          { name: 'Tutup - Member tidak dapat membuat tiket', value: 'close' }
         )
     ),
 
@@ -20,7 +20,7 @@ module.exports = {
     // Check if user is Access_ID
     if (interaction.user.id !== process.env.Access_ID) {
       return await interaction.reply({ 
-        content: '❌ Only authorized staff can use this command.', 
+        content: '❌ Hanya staff yang berwenang yang dapat menggunakan perintah ini.', 
         flags: MessageFlags.Ephemeral 
       });
     }
@@ -34,11 +34,11 @@ module.exports = {
 
       const embed = new EmbedBuilder()
         .setColor(isOpen ? '#00FF00' : '#FF0000')
-        .setTitle(`🎫 Ticket System ${isOpen ? 'Opened' : 'Closed'}`)
+        .setTitle(`🎫 Sistem Tiket ${isOpen ? 'Dibuka' : 'Ditutup'}`)
         .setDescription(
           isOpen 
-            ? '✅ Members can now create tickets.' 
-            : '🔒 Ticket creation is now disabled. Members cannot create new tickets.'
+            ? '✅ Member sekarang dapat membuat tiket.' 
+            : '🔒 Pembuatan tiket sekarang dinonaktifkan. Member tidak dapat membuat tiket baru.'
         )
         .setTimestamp();
 
@@ -47,7 +47,7 @@ module.exports = {
     } catch (error) {
       console.error('Error in toggle command:', error);
       await interaction.reply({ 
-        content: '❌ An error occurred while toggling the ticket system.', 
+        content: '❌ Terjadi kesalahan saat mengubah status sistem tiket.', 
         flags: MessageFlags.Ephemeral 
       });
     }

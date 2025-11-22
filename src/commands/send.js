@@ -5,13 +5,13 @@ require('dotenv').config();
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('send')
-    .setDescription('Send the ticket panel in the current channel'),
+    .setDescription('Kirim panel tiket di channel ini'),
 
   async execute(interaction) {
     // Check if user is Access_ID
     if (interaction.user.id !== process.env.Access_ID) {
       return await interaction.reply({ 
-        content: '❌ Only authorized staff can use this command.', 
+        content: '❌ Hanya staff yang berwenang yang dapat menggunakan perintah ini.', 
         flags: MessageFlags.Ephemeral 
       });
     }
@@ -23,7 +23,7 @@ module.exports = {
 
       if (config.feeLimits.length === 0) {
         return await interaction.reply({ 
-          content: '❌ Please configure fee limits first using `/configure add-fee`', 
+          content: '❌ Silakan konfigurasi batas biaya terlebih dahulu menggunakan `/configure add-fee`', 
           flags: MessageFlags.Ephemeral 
         });
       }
@@ -31,11 +31,11 @@ module.exports = {
       // Create the ticket panel embed
       const embed = new EmbedBuilder()
         .setColor('#0099FF')
-        .setTitle('🎫 Middleman Service - Create Ticket')
+        .setTitle('🎫 Layanan Rekber - Buat Tiket')
         .setDescription(
-          '**Welcome to our Middleman Service!**\n\n' +
-          'To create a ticket, please select the transaction amount range from the dropdown below.\n\n' +
-          '**Our Fee Structure:**\n' +
+          '**Selamat datang di Layanan Rekber kami!**\n\n' +
+          'Untuk membuat tiket, silakan pilih rentang jumlah transaksi dari dropdown di bawah.\n\n' +
+          '**Struktur Biaya Kami:**\n' +
           config.feeLimits.map(limit => {
             const feeText = limit.percentage 
               ? `${limit.percentage}% flat` 
@@ -43,7 +43,7 @@ module.exports = {
             return `• ${limit.label} → **${feeText}**`;
           }).join('\n')
         )
-        .setFooter({ text: 'Select your transaction range to get started' })
+        .setFooter({ text: 'Pilih rentang transaksi Anda untuk memulai' })
         .setTimestamp();
 
       // Create dropdown with fee options
@@ -55,7 +55,7 @@ module.exports = {
 
       const selectMenu = new StringSelectMenuBuilder()
         .setCustomId('ticket_fee_select')
-        .setPlaceholder('Select transaction amount range')
+        .setPlaceholder('Pilih rentang jumlah transaksi')
         .addOptions(options);
 
       const row = new ActionRowBuilder().addComponents(selectMenu);
@@ -63,15 +63,15 @@ module.exports = {
       await interaction.channel.send({ embeds: [embed], components: [row] });
       
       await interaction.reply({ 
-        content: '✅ Ticket panel sent successfully!', 
+        content: '✅ Panel tiket berhasil dikirim!', 
         flags: MessageFlags.Ephemeral 
       });
 
     } catch (error) {
       console.error('Error in send command:', error);
       await interaction.reply({ 
-        content: '❌ An error occurred while sending the ticket panel.', 
-        ephemeral: true 
+        content: '❌ Terjadi kesalahan saat mengirim panel tiket.', 
+        flags: MessageFlags.Ephemeral 
       });
     }
   }

@@ -68,19 +68,19 @@ function validateFeeConfig(min, max, fee, percentage) {
   const errors = [];
 
   if (min < 0) {
-    errors.push('Minimum amount cannot be negative');
+    errors.push('Jumlah minimum tidak boleh negatif');
   }
 
   if (max !== 0 && max < min) {
-    errors.push('Maximum amount must be greater than minimum');
+    errors.push('Jumlah maksimum harus lebih besar dari minimum');
   }
 
   if (!percentage && fee <= 0) {
-    errors.push('Fee amount must be positive when not using percentage');
+    errors.push('Jumlah biaya harus positif ketika tidak menggunakan persentase');
   }
 
   if (percentage && (percentage <= 0 || percentage > 100)) {
-    errors.push('Percentage must be between 0 and 100');
+    errors.push('Persentase harus antara 0 dan 100');
   }
 
   return {

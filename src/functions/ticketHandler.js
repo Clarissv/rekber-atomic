@@ -11,7 +11,7 @@ async function handleFeeSelection(interaction) {
     // Check if ticket system is open
     if (config.ticketSystemOpen === false) {
       return await interaction.reply({
-        content: '❌ Ticket system is currently closed. Please try again later.',
+        content: '❌ Sistem tiket saat ini sedang ditutup. Silakan coba lagi nanti.',
         flags: MessageFlags.Ephemeral
       });
     }
@@ -20,17 +20,17 @@ async function handleFeeSelection(interaction) {
 
     const embed = new EmbedBuilder()
       .setColor('#0099FF')
-      .setTitle('👥 Select Trading Partner')
+      .setTitle('👥 Pilih Partner Trading')
       .setDescription(
-        `**Transaction Range:** ${selectedFee.label}\n` +
+        `**Rentang Transaksi:** ${selectedFee.label}\n` +
         `**Fee:** ${selectedFee.percentage ? `${selectedFee.percentage}%` : `Rp ${selectedFee.fee.toLocaleString('id-ID')}`}\n\n` +
-        'Please select the person you are trading with from the dropdown below.'
+        'Silakan pilih orang yang akan trading dengan Anda dari dropdown di bawah.'
       );
 
     // Use UserSelectMenuBuilder for searchable user selection
     const userSelect = new UserSelectMenuBuilder()
       .setCustomId(`member_select_${feeIndex}`)
-      .setPlaceholder('Select the other party')
+      .setPlaceholder('Pilih pihak lain')
       .setMinValues(1)
       .setMaxValues(1);
 
@@ -45,7 +45,7 @@ async function handleFeeSelection(interaction) {
   } catch (error) {
     console.error('Error in handleFeeSelection:', error);
     const reply = { 
-      content: '❌ An error occurred while processing your selection.', 
+      content: '❌ Terjadi kesalahan saat memproses pilihan Anda.', 
       flags: MessageFlags.Ephemeral 
     };
     if (interaction.replied || interaction.deferred) {
@@ -130,14 +130,14 @@ async function handleMemberSelection(interaction) {
     // Send welcome message with payment info
     const welcomeEmbed = new EmbedBuilder()
       .setColor('#00FF00')
-      .setTitle('🎫 Ticket Created')
+      .setTitle('🎫 Tiket Dibuat')
       .setDescription(
-        `Hello <@${interaction.user.id}> and <@${otherPartyId}>!\n\n` +
-        `**Transaction Range:** ${selectedFee.label}\n` +
-        `**Middleman Fee:** ${selectedFee.percentage ? `${selectedFee.percentage}%` : `Rp ${selectedFee.fee.toLocaleString('id-ID')}`}\n\n` +
-        `A staff member <@${process.env.Access_ID}> has been added to assist you.\n` +
-        (failedMembers.includes(otherPartyId) ? `\n⚠️ <@${otherPartyId}> - Please check your DMs or click this thread to join!\n\n` : '') +
-        `Please proceed with your transaction details.`
+        `Halo <@${interaction.user.id}> dan <@${otherPartyId}>!\n\n` +
+        `**Rentang Transaksi:** ${selectedFee.label}\n` +
+        `**Fee Middleman:** ${selectedFee.percentage ? `${selectedFee.percentage}%` : `Rp ${selectedFee.fee.toLocaleString('id-ID')}`}\n\n` +
+        `Staff <@${process.env.Access_ID}> telah ditambahkan untuk membantu Anda.\n` +
+        (failedMembers.includes(otherPartyId) ? `\n⚠️ <@${otherPartyId}> - Silakan cek DM Anda atau klik thread ini untuk bergabung!\n\n` : '') +
+        `Silakan lanjutkan dengan detail transaksi Anda.`
       )
       .setTimestamp();
 
@@ -147,8 +147,19 @@ async function handleMemberSelection(interaction) {
     if (config.qrisImageUrl) {
       const paymentEmbed = new EmbedBuilder()
         .setColor('#FFD700')
-        .setTitle('💳 Payment Method')
-        .setDescription('Please use the following QRIS code for payment:')
+        .setTitle('💳 Metode Pembayaran')
+        .setDescription(
+          'Silakan gunakan salah satu metode pembayaran berikut:\n\n' +
+          '**QRIS:**\n' +
+          'Scan kode QR di bawah ini\n\n' +
+          '**E-Wallet / Rekening Bank:**\n' +
+          '```\n' +
+          '• GoPay: 08158843876\n' +
+          '• OVO: 08158843876\n' +
+          '• DANA: 08158843876\n' +
+          '• Bank BCA: 7611612552 a.n. Konrad\n' +
+          '```\n'
+        )
         .setImage(config.qrisImageUrl)
         .setTimestamp();
 
@@ -158,7 +169,7 @@ async function handleMemberSelection(interaction) {
     // Send close button (pinned)
     const closeButton = new ButtonBuilder()
       .setCustomId('close_ticket')
-      .setLabel('Close Ticket')
+      .setLabel('Tutup Tiket')
       .setStyle(ButtonStyle.Danger)
       .setEmoji('🔒');
 
@@ -166,8 +177,8 @@ async function handleMemberSelection(interaction) {
 
     const closeEmbed = new EmbedBuilder()
       .setColor('#FF0000')
-      .setTitle('🔒 Close Ticket')
-      .setDescription('When the transaction is complete, click the button below to close this ticket.\n\n**Note:** Only authorized staff can close tickets.');
+      .setTitle('🔒 Tutup Tiket')
+      .setDescription('Ketika transaksi selesai, klik tombol di bawah untuk menutup tiket ini.\n\n**Catatan:** Hanya staff yang berwenang yang dapat menutup tiket.');
 
     const closeMessage = await thread.send({ embeds: [closeEmbed], components: [closeRow] });
     await closeMessage.pin();
@@ -177,14 +188,14 @@ async function handleMemberSelection(interaction) {
       const auditChannel = await interaction.guild.channels.fetch(config.auditLogChannel);
       const auditEmbed = new EmbedBuilder()
         .setColor('#0099FF')
-        .setTitle('📋 Ticket Created')
+        .setTitle('📋 Tiket Dibuat')
         .addFields(
-          { name: 'Ticket', value: `${thread}`, inline: true },
-          { name: 'Creator', value: `<@${interaction.user.id}>`, inline: true },
-          { name: 'Other Party', value: `<@${otherPartyId}>`, inline: true },
-          { name: 'Fee Range', value: selectedFee.label, inline: true },
+          { name: 'Tiket', value: `${thread}`, inline: true },
+          { name: 'Pembuat', value: `<@${interaction.user.id}>`, inline: true },
+          { name: 'Pihak Lain', value: `<@${otherPartyId}>`, inline: true },
+          { name: 'Rentang Fee', value: selectedFee.label, inline: true },
           { name: 'Fee', value: selectedFee.percentage ? `${selectedFee.percentage}%` : `Rp ${selectedFee.fee.toLocaleString('id-ID')}`, inline: true },
-          { name: 'Created At', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: true }
+          { name: 'Dibuat Pada', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: true }
         )
         .setTimestamp();
 
@@ -192,12 +203,12 @@ async function handleMemberSelection(interaction) {
     }
 
     await interaction.editReply({ 
-      content: `✅ Ticket created! Please check ${thread}` 
+      content: `✅ Tiket berhasil dibuat! Silakan cek ${thread}` 
     });
 
   } catch (error) {
     console.error('Error in handleMemberSelection:', error);
-    const reply = { content: '❌ An error occurred while creating the ticket. Please check bot permissions.' };
+    const reply = { content: '❌ Terjadi kesalahan saat membuat tiket. Silakan cek permission bot.' };
     if (interaction.deferred) {
       await interaction.editReply(reply);
     } else {
@@ -211,7 +222,7 @@ async function handleCloseTicket(interaction) {
     // Check if user is authorized (Access_ID)
     if (interaction.user.id !== process.env.Access_ID) {
       return await interaction.reply({ 
-        content: '❌ Only authorized staff can close tickets.', 
+        content: '❌ Hanya staff yang berwenang yang dapat menutup tiket.', 
         flags: MessageFlags.Ephemeral 
       });
     }
@@ -223,7 +234,7 @@ async function handleCloseTicket(interaction) {
 
     if (!ticket) {
       return await interaction.editReply({ 
-        content: '❌ This is not a valid ticket thread.' 
+        content: '❌ Ini bukan thread tiket yang valid.' 
       });
     }
 
@@ -236,15 +247,15 @@ async function handleCloseTicket(interaction) {
     // Create ticket summary
     const summaryEmbed = new EmbedBuilder()
       .setColor('#FF0000')
-      .setTitle('🔒 Ticket Closed')
-      .setDescription(`This ticket has been closed by <@${interaction.user.id}>`)
+      .setTitle('🔒 Tiket Ditutup')
+      .setDescription(`Tiket ini telah ditutup oleh <@${interaction.user.id}>`)
       .addFields(
-        { name: 'Creator', value: `<@${ticket.creatorId}>`, inline: true },
-        { name: 'Other Party', value: `<@${ticket.otherPartyId}>`, inline: true },
-        { name: 'Fee Range', value: ticket.feeRange, inline: true },
+        { name: 'Pembuat', value: `<@${ticket.creatorId}>`, inline: true },
+        { name: 'Pihak Lain', value: `<@${ticket.otherPartyId}>`, inline: true },
+        { name: 'Rentang Fee', value: ticket.feeRange, inline: true },
         { name: 'Fee', value: ticket.fee, inline: true },
-        { name: 'Created', value: `<t:${Math.floor(new Date(ticket.createdAt).getTime() / 1000)}:F>`, inline: true },
-        { name: 'Closed', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: true }
+        { name: 'Dibuat', value: `<t:${Math.floor(new Date(ticket.createdAt).getTime() / 1000)}:F>`, inline: true },
+        { name: 'Ditutup', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: true }
       )
       .setTimestamp();
 
@@ -255,7 +266,7 @@ async function handleCloseTicket(interaction) {
       const logChannel = await interaction.guild.channels.fetch(config.ticketLogChannel);
       
       const viewButton = new ButtonBuilder()
-        .setLabel('View Thread')
+        .setLabel('Lihat Thread')
         .setStyle(ButtonStyle.Link)
         .setURL(`https://discord.com/channels/${interaction.guild.id}/${thread.id}`);
 
@@ -263,13 +274,13 @@ async function handleCloseTicket(interaction) {
 
       const logEmbed = new EmbedBuilder()
         .setColor('#FF6B6B')
-        .setTitle('🎫 Ticket Closed')
+        .setTitle('🎫 Tiket Ditutup')
         .addFields(
-          { name: 'Ticket ID', value: thread.id, inline: true },
-          { name: 'Ticket Name', value: thread.name, inline: true },
-          { name: 'Closed By', value: `<@${interaction.user.id}>`, inline: true },
-          { name: 'Creator', value: `<@${ticket.creatorId}>`, inline: true },
-          { name: 'Other Party', value: `<@${ticket.otherPartyId}>`, inline: true },
+          { name: 'ID Tiket', value: thread.id, inline: true },
+          { name: 'Nama Tiket', value: thread.name, inline: true },
+          { name: 'Ditutup Oleh', value: `<@${interaction.user.id}>`, inline: true },
+          { name: 'Pembuat', value: `<@${ticket.creatorId}>`, inline: true },
+          { name: 'Pihak Lain', value: `<@${ticket.otherPartyId}>`, inline: true },
           { name: 'Fee', value: ticket.fee, inline: true }
         )
         .setTimestamp();
@@ -282,12 +293,12 @@ async function handleCloseTicket(interaction) {
       const auditChannel = await interaction.guild.channels.fetch(config.auditLogChannel);
       const auditEmbed = new EmbedBuilder()
         .setColor('#FF0000')
-        .setTitle('🔒 Ticket Closed')
+        .setTitle('🔒 Tiket Ditutup')
         .addFields(
-          { name: 'Ticket', value: `${thread}`, inline: true },
-          { name: 'Closed By', value: `<@${interaction.user.id}>`, inline: true },
-          { name: 'Creator', value: `<@${ticket.creatorId}>`, inline: true },
-          { name: 'Duration', value: calculateDuration(ticket.createdAt), inline: true }
+          { name: 'Tiket', value: `${thread}`, inline: true },
+          { name: 'Ditutup Oleh', value: `<@${interaction.user.id}>`, inline: true },
+          { name: 'Pembuat', value: `<@${ticket.creatorId}>`, inline: true },
+          { name: 'Durasi', value: calculateDuration(ticket.createdAt), inline: true }
         )
         .setTimestamp();
 

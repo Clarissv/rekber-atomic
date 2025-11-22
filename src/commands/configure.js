@@ -78,6 +78,16 @@ module.exports = {
     )
     .addSubcommand(subcommand =>
       subcommand
+        .setName('completed-log-channel')
+        .setDescription('Set the completed transaction log channel (public)')
+        .addChannelOption(option =>
+          option.setName('channel')
+            .setDescription('Channel for completed transaction logs')
+            .setRequired(true)
+        )
+    )
+    .addSubcommand(subcommand =>
+      subcommand
         .setName('view')
         .setDescription('View current configuration')
     ),
@@ -221,6 +231,20 @@ module.exports = {
           break;
         }
 
+        case 'completed-log-channel': {
+          const channel = interaction.options.getChannel('channel');
+          await GuildConfig.setCompletedLogChannel(guildId, channel.id);
+
+          const embed = new EmbedBuilder()
+            .setColor('#00FF00')
+            .setTitle('✅ Completed Log Channel Set')
+            .setDescription(`Completed transaction logs will be sent to ${channel}`)
+            .setTimestamp();
+
+          await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
+          break;
+        }
+
         case 'view': {
           const config = await GuildConfig.getConfig(guildId);
 
@@ -248,6 +272,11 @@ module.exports = {
               { 
                 name: '🎫 Ticket Log Channel', 
                 value: config.ticketLogChannel ? `<#${config.ticketLogChannel}>` : '❌ Not set',
+                inline: true
+              },
+              { 
+                name: '✅ Completed Log Channel', 
+                value: config.completedLogChannel ? `<#${config.completedLogChannel}>` : '❌ Not set',
                 inline: true
               },
               { 
