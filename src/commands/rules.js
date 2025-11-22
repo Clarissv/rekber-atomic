@@ -49,6 +49,11 @@ module.exports = {
             name: '5️⃣ Pembayaran', 
             value: '• Gunakan metode pembayaran yang aman\n• Jangan transfer ke rekening selain yang ditentukan\n• Konfirmasi pembayaran dengan bukti yang jelas',
             inline: false
+          },
+          { 
+            name: '6️⃣ Channel', 
+            value: '• Hanya memposting iklan di <#1441083271462260767> dan <#1441100915749945455>\n• Channel <#1441687360759922688> hanya untuk diskusi, dilarang mengirim iklan di channel tersebut\n• Pelanggar akan diberikan timeout 12 jam',
+            inline: false
           }
         )
         .setFooter({ text: 'Terima kasih atas kepercayaan Anda! | Tetap waspada dan hati-hati' })
