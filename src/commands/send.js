@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, MessageFlags } = require('discord.js');
 const GuildConfig = require('../schemas/GuildConfig');
+const { isAuthorized } = require('../utilities/helpers');
 require('dotenv').config();
 
 module.exports = {
@@ -9,7 +10,7 @@ module.exports = {
 
   async execute(interaction) {
     // Check if user is Access_ID
-    if (interaction.user.id !== process.env.Access_ID) {
+    if (!isAuthorized(interaction.user.id)) {
       return await interaction.reply({ 
         content: '❌ Hanya staff yang berwenang yang dapat menggunakan perintah ini.', 
         flags: MessageFlags.Ephemeral 

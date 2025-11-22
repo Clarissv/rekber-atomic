@@ -94,7 +94,7 @@ module.exports = {
 
   async execute(interaction) {
     // Check if user is Access_ID
-    if (interaction.user.id !== process.env.Access_ID) {
+    if (!isAuthorized(interaction.user.id)) {
       return await interaction.reply({ 
         content: '❌ Only authorized staff can use this command.', 
         flags: MessageFlags.Ephemeral 

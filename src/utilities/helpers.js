@@ -111,6 +111,27 @@ function truncate(text, maxLength = 100) {
   return text.substring(0, maxLength - 3) + '...';
 }
 
+/**
+ * Check if user is authorized (Access_ID)
+ * Supports multiple IDs separated by comma
+ * @param {string} userId - User ID to check
+ * @returns {boolean} True if user is authorized
+ */
+function isAuthorized(userId) {
+  if (!process.env.Access_ID) return false;
+  const authorizedIds = process.env.Access_ID.split(',').map(id => id.trim());
+  return authorizedIds.includes(userId);
+}
+
+/**
+ * Get all authorized user IDs
+ * @returns {string[]} Array of authorized user IDs
+ */
+function getAuthorizedIds() {
+  if (!process.env.Access_ID) return [];
+  return process.env.Access_ID.split(',').map(id => id.trim());
+}
+
 module.exports = {
   formatRupiah,
   isValidImageUrl,
@@ -118,5 +139,7 @@ module.exports = {
   calculateDuration,
   validateFeeConfig,
   discordTimestamp,
-  truncate
+  truncate,
+  isAuthorized,
+  getAuthorizedIds
 };

@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
 const Ticket = require('../schemas/Ticket');
 const GuildConfig = require('../schemas/GuildConfig');
+const { isAuthorized } = require('../utilities/helpers');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -9,7 +10,7 @@ module.exports = {
 
   async execute(interaction) {
     // Check if user is Access_ID
-    if (interaction.user.id !== process.env.Access_ID) {
+    if (!isAuthorized(interaction.user.id)) {
       return await interaction.reply({ 
         content: '❌ Hanya staff yang berwenang yang dapat menggunakan command ini.', 
         flags: MessageFlags.Ephemeral 

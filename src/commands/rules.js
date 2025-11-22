@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
+const { isAuthorized } = require('../utilities/helpers');
 require('dotenv').config();
 
 module.exports = {
@@ -8,7 +9,7 @@ module.exports = {
 
   async execute(interaction) {
     // Check if user is Access_ID
-    if (interaction.user.id !== process.env.Access_ID) {
+    if (!isAuthorized(interaction.user.id)) {
       return await interaction.reply({ 
         content: '❌ Hanya staff yang berwenang yang dapat menggunakan command ini.', 
         flags: MessageFlags.Ephemeral 

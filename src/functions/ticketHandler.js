@@ -1,6 +1,7 @@
 const { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, UserSelectMenuBuilder, ButtonBuilder, ButtonStyle, ChannelType, MessageFlags } = require('discord.js');
 const GuildConfig = require('../schemas/GuildConfig');
 const Ticket = require('../schemas/Ticket');
+const { isAuthorized, getAuthorizedIds } = require('../utilities/helpers');
 
 async function handleFeeSelection(interaction) {
   try {
@@ -88,9 +89,13 @@ async function handleMemberSelection(interaction) {
       otherPartyId
     ];
     
-    if (process.env.Access_ID && process.env.Access_ID !== interaction.client.user.id) {
-      membersToAdd.push(process.env.Access_ID);
-    }
+    // Add all authorized staff members
+    const authorizedIds = getAuthorizedIds();
+    authorizedIds.forEach(id => {
+      if (id !== interaction.client.user.id && !membersToAdd.includes(id)) {
+        membersToAdd.push(id);
+      }
+    });
 
     for (const memberId of membersToAdd) {
       try {
@@ -124,10 +129,11 @@ async function handleMemberSelection(interaction) {
       otherPartyId,
       feeRange: selectedFee.label,
       fee: selectedFee.percentage ? `${selectedFee.percentage}%` : `Rp ${selectedFee.fee.toLocaleString('id-ID')}`,
-      members: [interaction.user.id, otherPartyId, process.env.Access_ID]
+      members: [interaction.user.id, otherPartyId, ...getAuthorizedIds()]
     });
 
     // Send welcome message with payment info
+    const staffMentions = getAuthorizedIds().map(id => `<@${id}>`).join(' ');
     const welcomeEmbed = new EmbedBuilder()
       .setColor('#00FF00')
       .setTitle('🎫 Tiket Dibuat')
@@ -135,13 +141,13 @@ async function handleMemberSelection(interaction) {
         `Halo <@${interaction.user.id}> dan <@${otherPartyId}>!\n\n` +
         `**Rentang Transaksi:** ${selectedFee.label}\n` +
         `**Fee Middleman:** ${selectedFee.percentage ? `${selectedFee.percentage}%` : `Rp ${selectedFee.fee.toLocaleString('id-ID')}`}\n\n` +
-        `Staff <@${process.env.Access_ID}> telah ditambahkan untuk membantu Anda.\n` +
+        `Staff ${staffMentions} telah ditambahkan untuk membantu Anda.\n` +
         (failedMembers.includes(otherPartyId) ? `\n⚠️ <@${otherPartyId}> - Silakan cek DM Anda atau klik thread ini untuk bergabung!\n\n` : '') +
         `Silakan lanjutkan dengan detail transaksi Anda.`
       )
       .setTimestamp();
 
-    await thread.send({ content: `<@${interaction.user.id}> <@${otherPartyId}> <@${process.env.Access_ID}>`, embeds: [welcomeEmbed] });
+    await thread.send({ content: `<@${interaction.user.id}> <@${otherPartyId}> ${staffMentions}`, embeds: [welcomeEmbed] });
 
     // Send payment method if QRIS is configured
     if (config.qrisImageUrl) {
@@ -220,7 +226,7 @@ async function handleMemberSelection(interaction) {
 async function handleCloseTicket(interaction) {
   try {
     // Check if user is authorized (Access_ID)
-    if (interaction.user.id !== process.env.Access_ID) {
+    if (!isAuthorized(interaction.user.id)) {
       return await interaction.reply({ 
         content: '❌ Hanya staff yang berwenang yang dapat menutup tiket.', 
         flags: MessageFlags.Ephemeral 

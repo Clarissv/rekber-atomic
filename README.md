@@ -45,8 +45,14 @@ npm install
 BOT_TOKEN=your_bot_token_here
 BOT_ID=your_bot_id_here
 MONGO_DB=your_mongodb_connection_string
-Access_ID=authorized_staff_user_id
+# Support multiple authorized staff IDs separated by comma
+Access_ID=123456789,987654321,555555555
 ```
+
+**Note for Railway Deployment:**
+- When setting environment variables in Railway, use comma-separated IDs without spaces
+- Example: `1207696111851143208,1234567890123456789`
+- All listed IDs will have full staff permissions
 
 ### 3. MongoDB Setup
 
