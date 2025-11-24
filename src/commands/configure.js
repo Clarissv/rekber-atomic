@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
 const GuildConfig = require('../schemas/GuildConfig');
+const { isValidImageUrl, isAuthorized } = require('../utilities/helpers');
 require('dotenv').config();
 
 module.exports = {
