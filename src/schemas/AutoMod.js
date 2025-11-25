@@ -12,6 +12,7 @@ class AutoMod {
         guildId,
         enabled: false,
         monitoredChannels: [], // Array of channel IDs
+        monitoredForums: [], // Array of forum channel IDs
         keywords: [], // Array of banned keywords (case-insensitive)
         timeoutDuration: 1, // Duration in hours
         logChannel: null // Channel to log auto-mod actions
@@ -94,6 +95,27 @@ class AutoMod {
       { guildId },
       { $set: { logChannel: channelId } },
       { upsert: true }
+    );
+  }
+
+  static async addForum(guildId, forumId) {
+    const db = getDatabase();
+    const autoModConfigs = db.collection('autoModConfigs');
+    
+    await autoModConfigs.updateOne(
+      { guildId },
+      { $addToSet: { monitoredForums: forumId } },
+      { upsert: true }
+    );
+  }
+
+  static async removeForum(guildId, forumId) {
+    const db = getDatabase();
+    const autoModConfigs = db.collection('autoModConfigs');
+    
+    await autoModConfigs.updateOne(
+      { guildId },
+      { $pull: { monitoredForums: forumId } }
     );
   }
 }

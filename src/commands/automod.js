@@ -41,6 +41,28 @@ module.exports = {
     )
     .addSubcommand(subcommand =>
       subcommand
+        .setName('add-forum')
+        .setDescription('Tambahkan forum untuk dimonitor')
+        .addChannelOption(option =>
+          option.setName('forum')
+            .setDescription('Forum channel yang akan dimonitor')
+            .addChannelTypes(ChannelType.GuildForum)
+            .setRequired(true)
+        )
+    )
+    .addSubcommand(subcommand =>
+      subcommand
+        .setName('remove-forum')
+        .setDescription('Hapus forum dari monitoring')
+        .addChannelOption(option =>
+          option.setName('forum')
+            .setDescription('Forum yang akan dihapus')
+            .addChannelTypes(ChannelType.GuildForum)
+            .setRequired(true)
+        )
+    )
+    .addSubcommand(subcommand =>
+      subcommand
         .setName('add-keyword')
         .setDescription('Tambahkan keyword yang dilarang')
         .addStringOption(option =>
@@ -139,6 +161,26 @@ module.exports = {
           });
         }
 
+        case 'add-forum': {
+          const forum = interaction.options.getChannel('forum');
+          await AutoMod.addForum(guildId, forum.id);
+          
+          return await interaction.reply({ 
+            content: `✅ Forum ${forum} berhasil ditambahkan ke monitoring auto-mod.`, 
+            flags: MessageFlags.Ephemeral 
+          });
+        }
+
+        case 'remove-forum': {
+          const forum = interaction.options.getChannel('forum');
+          await AutoMod.removeForum(guildId, forum.id);
+          
+          return await interaction.reply({ 
+            content: `✅ Forum ${forum} berhasil dihapus dari monitoring auto-mod.`, 
+            flags: MessageFlags.Ephemeral 
+          });
+        }
+
         case 'add-keyword': {
           const keyword = interaction.options.getString('keyword');
           await AutoMod.addKeyword(guildId, keyword);
@@ -206,6 +248,13 @@ module.exports = {
                 value: config.monitoredChannels.length > 0 
                   ? config.monitoredChannels.map(id => `<#${id}>`).join(', ')
                   : 'Belum ada channel',
+                inline: false
+              },
+              { 
+                name: `Forum yang Dimonitor (${config.monitoredForums?.length || 0})`, 
+                value: config.monitoredForums && config.monitoredForums.length > 0 
+                  ? config.monitoredForums.map(id => `<#${id}>`).join(', ')
+                  : 'Belum ada forum',
                 inline: false
               },
               { 

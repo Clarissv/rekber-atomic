@@ -1,4 +1,4 @@
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, ChannelType } = require('discord.js');
 const AutoMod = require('../schemas/AutoMod');
 
 async function handleAutoMod(message) {
@@ -14,8 +14,13 @@ async function handleAutoMod(message) {
     // Check if auto-mod is enabled
     if (!config.enabled) return;
 
-    // Check if message is in a monitored channel
-    if (!config.monitoredChannels.includes(message.channel.id)) return;
+    // Check if message is in a monitored channel OR in a thread from monitored forum
+    const isMonitoredChannel = config.monitoredChannels.includes(message.channel.id);
+    const isMonitoredForum = message.channel.isThread() && 
+      message.channel.parent && 
+      config.monitoredForums.includes(message.channel.parent.id);
+
+    if (!isMonitoredChannel && !isMonitoredForum) return;
 
     // Check if message contains any banned keywords
     const messageContent = message.content.toLowerCase();
@@ -25,12 +30,33 @@ async function handleAutoMod(message) {
 
     if (foundKeywords.length === 0) return;
 
-    // Delete the message
-    try {
-      await message.delete();
-    } catch (deleteError) {
-      console.error('Failed to delete message:', deleteError.message);
-      return; // If can't delete, don't timeout
+    // If it's a forum post (first message in thread), delete the entire thread
+    let deletedThread = false;
+    if (isMonitoredForum && message.channel.isThread()) {
+      try {
+        const thread = message.channel;
+        const starterMessage = await thread.fetchStarterMessage();
+        
+        // Check if this is the starter message
+        if (starterMessage && starterMessage.id === message.id) {
+          await thread.delete();
+          deletedThread = true;
+        } else {
+          // Just delete the message if it's not the starter
+          await message.delete();
+        }
+      } catch (deleteError) {
+        console.error('Failed to delete thread/message:', deleteError.message);
+        return;
+      }
+    } else {
+      // Delete the message normally
+      try {
+        await message.delete();
+      } catch (deleteError) {
+        console.error('Failed to delete message:', deleteError.message);
+        return;
+      }
     }
 
     // Timeout the user
@@ -51,13 +77,23 @@ async function handleAutoMod(message) {
         const logEmbed = new EmbedBuilder()
           .setColor('#FF0000')
           .setTitle('🛡️ Auto-Mod Action')
-          .setDescription('Pesan yang mengandung keyword terlarang telah dihapus.')
+          .setDescription(
+            deletedThread 
+              ? 'Forum post yang mengandung keyword terlarang telah dihapus.' 
+              : 'Pesan yang mengandung keyword terlarang telah dihapus.'
+          )
           .addFields(
             { name: 'User', value: `${message.author} (${message.author.tag})`, inline: true },
-            { name: 'Channel', value: `${message.channel}`, inline: true },
+            { 
+              name: deletedThread ? 'Forum' : 'Channel', 
+              value: deletedThread 
+                ? `${message.channel.parent} (Thread dihapus)` 
+                : `${message.channel}`, 
+              inline: true 
+            },
             { name: 'Timeout Durasi', value: `${config.timeoutDuration} jam`, inline: true },
             { name: 'Keyword Terdeteksi', value: `\`${foundKeywords.join('`, `')}\``, inline: false },
-            { name: 'Pesan Asli', value: message.content.length > 1024 ? message.content.substring(0, 1021) + '...' : message.content, inline: false },
+            { name: deletedThread ? 'Judul Thread' : 'Pesan Asli', value: deletedThread ? message.channel.name : (message.content.length > 1024 ? message.content.substring(0, 1021) + '...' : message.content), inline: false },
             { name: 'Timeout Hingga', value: `<t:${Math.floor(timeoutUntil.getTime() / 1000)}:F>`, inline: false }
           )
           .setFooter({ text: `User ID: ${message.author.id}` })
@@ -75,8 +111,9 @@ async function handleAutoMod(message) {
         .setColor('#FF0000')
         .setTitle('⚠️ Auto-Moderation Warning')
         .setDescription(
-          `Pesan Anda di **${message.guild.name}** telah dihapus karena mengandung keyword yang dilarang.\n\n` +
-          `**Channel:** ${message.channel}\n` +
+          `${deletedThread ? 'Forum post' : 'Pesan'} Anda di **${message.guild.name}** telah dihapus karena mengandung keyword yang dilarang.\n\n` +
+          `**${deletedThread ? 'Forum' : 'Channel'}:** ${deletedThread ? message.channel.parent : message.channel}\n` +
+          (deletedThread ? `**Judul Thread:** ${message.channel.name}\n` : '') +
           `**Keyword Terdeteksi:** \`${foundKeywords.join('`, `')}\`\n` +
           `**Timeout Durasi:** ${config.timeoutDuration} jam\n` +
           `**Timeout Hingga:** <t:${Math.floor(timeoutUntil.getTime() / 1000)}:F>\n\n` +
