@@ -15,12 +15,14 @@ async function handleAutoMod(message) {
     if (!config.enabled) return;
 
     // Check if message is in a monitored channel OR in a thread from monitored forum
-    const isMonitoredChannel = config.monitoredChannels.includes(message.channel.id);
+    const isMonitoredChannel = config.monitoredChannels && config.monitoredChannels.includes(message.channel.id);
     const isMonitoredForum = message.channel.isThread() && 
       message.channel.parent && 
+      config.monitoredForums && 
       config.monitoredForums.includes(message.channel.parent.id);
 
     if (!isMonitoredChannel && !isMonitoredForum) return;
+
 
     // Check if message contains any banned keywords
     const messageContent = message.content.toLowerCase();
