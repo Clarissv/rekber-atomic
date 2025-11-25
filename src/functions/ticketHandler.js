@@ -164,6 +164,7 @@ async function handleMemberSelection(interaction) {
           '• OVO: 08158843876\n' +
           '• DANA: 08158843876\n' +
           '• Bank BCA: 7611612552 a.n. Konrad\n' +
+          '• Seabank: 901007767813 a.n. Konrad\n' +
           '```\n'
         )
         .setImage(config.qrisImageUrl)

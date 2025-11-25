@@ -1,6 +1,7 @@
 const { Client, GatewayIntentBits, Collection, Events } = require('discord.js');
 const { connectToDatabase } = require('./src/utilities/database');
 const { handleFeeSelection, handleMemberSelection, handleCloseTicket } = require('./src/functions/ticketHandler');
+const { handleAutoMod } = require('./src/functions/autoModHandler');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
@@ -102,6 +103,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
       await handleCloseTicket(interaction);
     }
   }
+});
+
+// Message handler for auto-moderation
+client.on(Events.MessageCreate, async (message) => {
+  await handleAutoMod(message);
 });
 
 // Error handling

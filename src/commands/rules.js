@@ -52,7 +52,7 @@ module.exports = {
           },
           { 
             name: '6️⃣ Channel', 
-            value: '• Hanya memposting iklan di <#1441083271462260767> dan <#1441100915749945455>\n• Channel <#1441687360759922688> hanya untuk diskusi, dilarang mengirim iklan di channel tersebut\n• Pelanggar akan diberikan timeout 12 jam',
+            value: '• Dilarang memposting jasa joki dalam bentuk apapun\n• Dilarang memposting PT PT server x8\n• Pelanggar akan otomatis diberikan timeout 12 jam\n• Gunakan middleman yang tersedia di <#1441097081736663100>',
             inline: false
           }
         )
