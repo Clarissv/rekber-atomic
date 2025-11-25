@@ -35,8 +35,10 @@ async function handleAutoMod(message) {
     // Save channel info before potential deletion
     const channelInfo = {
       name: message.channel.name,
-      parent: message.channel.parent,
-      mention: `${message.channel}`
+      parent: message.channel.parent ? `<#${message.channel.parent.id}>` : 'Unknown Forum',
+      parentName: message.channel.parent ? message.channel.parent.name : 'Unknown',
+      mention: `${message.channel}`,
+      id: message.channel.id
     };
     const messageContentBackup = message.content;
 
