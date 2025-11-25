@@ -32,6 +32,14 @@ async function handleAutoMod(message) {
 
     if (foundKeywords.length === 0) return;
 
+    // Save channel info before potential deletion
+    const channelInfo = {
+      name: message.channel.name,
+      parent: message.channel.parent,
+      mention: `${message.channel}`
+    };
+    const messageContentBackup = message.content;
+
     // If it's a forum post (first message in thread), delete the entire thread
     let deletedThread = false;
     if (isMonitoredForum && message.channel.isThread()) {
@@ -89,13 +97,13 @@ async function handleAutoMod(message) {
             { 
               name: deletedThread ? 'Forum' : 'Channel', 
               value: deletedThread 
-                ? `${message.channel.parent} (Thread dihapus)` 
-                : `${message.channel}`, 
+                ? `${channelInfo.parent} (Thread dihapus)` 
+                : channelInfo.mention, 
               inline: true 
             },
             { name: 'Timeout Durasi', value: `${config.timeoutDuration} jam`, inline: true },
             { name: 'Keyword Terdeteksi', value: `\`${foundKeywords.join('`, `')}\``, inline: false },
-            { name: deletedThread ? 'Judul Thread' : 'Pesan Asli', value: deletedThread ? message.channel.name : (message.content.length > 1024 ? message.content.substring(0, 1021) + '...' : message.content), inline: false },
+            { name: deletedThread ? 'Judul Thread' : 'Pesan Asli', value: deletedThread ? channelInfo.name : (messageContentBackup.length > 1024 ? messageContentBackup.substring(0, 1021) + '...' : messageContentBackup), inline: false },
             { name: 'Timeout Hingga', value: `<t:${Math.floor(timeoutUntil.getTime() / 1000)}:F>`, inline: false }
           )
           .setFooter({ text: `User ID: ${message.author.id}` })
@@ -114,8 +122,8 @@ async function handleAutoMod(message) {
         .setTitle('⚠️ Auto-Moderation Warning')
         .setDescription(
           `${deletedThread ? 'Forum post' : 'Pesan'} Anda di **${message.guild.name}** telah dihapus karena mengandung keyword yang dilarang.\n\n` +
-          `**${deletedThread ? 'Forum' : 'Channel'}:** ${deletedThread ? message.channel.parent : message.channel}\n` +
-          (deletedThread ? `**Judul Thread:** ${message.channel.name}\n` : '') +
+          `**${deletedThread ? 'Forum' : 'Channel'}:** ${deletedThread ? channelInfo.parent : channelInfo.mention}\n` +
+          (deletedThread ? `**Judul Thread:** ${channelInfo.name}\n` : '') +
           `**Keyword Terdeteksi:** \`${foundKeywords.join('`, `')}\`\n` +
           `**Timeout Durasi:** ${config.timeoutDuration} jam\n` +
           `**Timeout Hingga:** <t:${Math.floor(timeoutUntil.getTime() / 1000)}:F>\n\n` +
