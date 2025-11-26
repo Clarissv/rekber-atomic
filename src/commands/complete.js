@@ -75,6 +75,9 @@ module.exports = {
 
       // Send data to Google Sheets via SheetDB
       try {
+        // Calculate Laba Bersih
+        const labaBersih = biayaAdmin - biayaTransfer;
+        
         const sheetData = {
           data: [
             {
@@ -83,6 +86,7 @@ module.exports = {
               'Nominal Transaksi': nominal,
               'Biaya Admin Midman': biayaAdmin,
               'Biaya Admin Transfer': biayaTransfer,
+              'Laba Bersih': labaBersih,
               'Penerima': penerima
             }
           ]
