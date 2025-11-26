@@ -3,10 +3,40 @@ const Ticket = require('../schemas/Ticket');
 const GuildConfig = require('../schemas/GuildConfig');
 const { isAuthorized } = require('../utilities/helpers');
 
+// SheetDB API endpoint
+const SHEETDB_API_URL = 'https://sheetdb.io/api/v1/fn53dgzy2owfz';
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('complete')
-    .setDescription('Mark transaction as completed and send success log'),
+    .setDescription('Mark transaction as completed and send success log')
+    .addIntegerOption(option =>
+      option.setName('nominal')
+        .setDescription('Nominal transaksi (dalam Rupiah)')
+        .setRequired(true)
+        .setMinValue(1)
+    )
+    .addIntegerOption(option =>
+      option.setName('biaya_admin')
+        .setDescription('Biaya admin middleman (dalam Rupiah)')
+        .setRequired(true)
+        .setMinValue(0)
+    )
+    .addIntegerOption(option =>
+      option.setName('biaya_transfer')
+        .setDescription('Biaya admin transfer (dalam Rupiah)')
+        .setRequired(true)
+        .setMinValue(0)
+    )
+    .addStringOption(option =>
+      option.setName('penerima')
+        .setDescription('Penerima fee')
+        .setRequired(true)
+        .addChoices(
+          { name: 'Claris', value: 'Claris' },
+          { name: 'Moltres', value: 'Moltres' }
+        )
+    ),
 
   async execute(interaction) {
     // Check if user is Access_ID
@@ -36,6 +66,42 @@ module.exports = {
       }
 
       await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+      // Get command options
+      const nominal = interaction.options.getInteger('nominal');
+      const biayaAdmin = interaction.options.getInteger('biaya_admin');
+      const biayaTransfer = interaction.options.getInteger('biaya_transfer');
+      const penerima = interaction.options.getString('penerima');
+
+      // Send data to Google Sheets via SheetDB
+      try {
+        const sheetData = {
+          data: {
+            'Pembeli/Penjual 1': ticket.creatorId,
+            'Pembeli/Penjual 2': ticket.otherPartyId,
+            'Nominal Transaksi': nominal,
+            'Biaya Admin Midman': biayaAdmin,
+            'Biaya Admin Transfer': biayaTransfer,
+            'Penerima': penerima
+          }
+        };
+
+        const response = await fetch(SHEETDB_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(sheetData)
+        });
+
+        if (!response.ok) {
+          console.error('SheetDB API error:', await response.text());
+        } else {
+          console.log('✅ Data sent to Google Sheets successfully');
+        }
+      } catch (sheetError) {
+        console.error('Failed to send data to Google Sheets:', sheetError);
+      }
 
       const config = await GuildConfig.getConfig(interaction.guild.id);
 
