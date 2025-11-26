@@ -76,14 +76,16 @@ module.exports = {
       // Send data to Google Sheets via SheetDB
       try {
         const sheetData = {
-          data: {
-            'Pembeli/Penjual 1': ticket.creatorId,
-            'Pembeli/Penjual 2': ticket.otherPartyId,
-            'Nominal Transaksi': nominal,
-            'Biaya Admin Midman': biayaAdmin,
-            'Biaya Admin Transfer': biayaTransfer,
-            'Penerima': penerima
-          }
+          data: [
+            {
+              'Pembeli/Penjual 1': ticket.creatorId,
+              'Pembeli/Penjual 2': ticket.otherPartyId,
+              'Nominal Transaksi': nominal,
+              'Biaya Admin Midman': biayaAdmin,
+              'Biaya Admin Transfer': biayaTransfer,
+              'Penerima': penerima
+            }
+          ]
         };
 
         const response = await fetch(SHEETDB_API_URL, {
