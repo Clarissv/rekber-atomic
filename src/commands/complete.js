@@ -3,8 +3,8 @@ const Ticket = require('../schemas/Ticket');
 const GuildConfig = require('../schemas/GuildConfig');
 const { isAuthorized } = require('../utilities/helpers');
 
-// SheetDB API endpoint
-const SHEETDB_API_URL = 'https://sheetdb.io/api/v1/fn53dgzy2owfz';
+// Google Apps Script Web App URL for Google Sheets
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxKQ12wmDV8_NUoDw9xQwKllEaEfAzFpiHrUwIZj08WP9L-icbd-ObWef8rgIe0baw/exec';
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -73,26 +73,23 @@ module.exports = {
       const biayaTransfer = interaction.options.getInteger('biaya_transfer');
       const penerima = interaction.options.getString('penerima');
 
-      // Send data to Google Sheets via SheetDB
+      // Send data to Google Sheets via Google Apps Script
       try {
         // Calculate Laba Bersih
         const labaBersih = biayaAdmin - biayaTransfer;
         
+        // Data format for Google Apps Script (direct object, no wrapper)
         const sheetData = {
-          data: [
-            {
-              'Pembeli/Penjual 1': ticket.creatorId,
-              'Pembeli/Penjual 2': ticket.otherPartyId,
-              'Nominal Transaksi': nominal,
-              'Biaya Admin Midman': biayaAdmin,
-              'Biaya Admin Transfer': biayaTransfer,
-              'Laba Bersih': labaBersih,
-              'Penerima': penerima
-            }
-          ]
+          'Pembeli/Penjual 1': ticket.creatorId,
+          'Pembeli/Penjual 2': ticket.otherPartyId,
+          'Nominal Transaksi': nominal,
+          'Biaya Admin Midman': biayaAdmin,
+          'Biaya Admin Transfer': biayaTransfer,
+          'Laba Bersih': labaBersih,
+          'Penerima': penerima
         };
 
-        const response = await fetch(SHEETDB_API_URL, {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -100,10 +97,12 @@ module.exports = {
           body: JSON.stringify(sheetData)
         });
 
-        if (!response.ok) {
-          console.error('SheetDB API error:', await response.text());
-        } else {
+        const responseData = await response.json();
+        if (responseData.success) {
           console.log('✅ Data sent to Google Sheets successfully');
+          console.log('📊 Sent data:', JSON.stringify(sheetData));
+        } else {
+          console.error('Google Sheets error:', responseData.message);
         }
       } catch (sheetError) {
         console.error('Failed to send data to Google Sheets:', sheetError);
