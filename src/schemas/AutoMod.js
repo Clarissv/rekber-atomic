@@ -14,7 +14,8 @@ class AutoMod {
         monitoredChannels: [], // Array of channel IDs
         monitoredForums: [], // Array of forum channel IDs
         keywords: [], // Array of banned keywords (case-insensitive)
-        timeoutDuration: 1, // Duration in hours
+        muteDuration: 1, // Duration in hours for mute
+        muteRoleId: null, // Role ID for muted users
         logChannel: null // Channel to log auto-mod actions
       };
       await autoModConfigs.insertOne(config);
@@ -76,13 +77,24 @@ class AutoMod {
     );
   }
 
-  static async setTimeoutDuration(guildId, hours) {
+  static async setMuteDuration(guildId, hours) {
     const db = getDatabase();
     const autoModConfigs = db.collection('autoModConfigs');
     
     await autoModConfigs.updateOne(
       { guildId },
-      { $set: { timeoutDuration: hours } },
+      { $set: { muteDuration: hours } },
+      { upsert: true }
+    );
+  }
+
+  static async setMuteRole(guildId, roleId) {
+    const db = getDatabase();
+    const autoModConfigs = db.collection('autoModConfigs');
+    
+    await autoModConfigs.updateOne(
+      { guildId },
+      { $set: { muteRoleId: roleId } },
       { upsert: true }
     );
   }

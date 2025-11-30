@@ -42,6 +42,12 @@ async function handleAutoMod(message) {
     };
     const messageContentBackup = message.content;
 
+    // Check if mute role is configured
+    if (!config.muteRoleId) {
+      console.error('Auto-mod: Mute role not configured for guild', message.guild.id);
+      return;
+    }
+
     // If it's a forum post (first message in thread), delete the entire thread
     let deletedThread = false;
     if (isMonitoredForum && message.channel.isThread()) {
@@ -71,20 +77,36 @@ async function handleAutoMod(message) {
       }
     }
 
-    // Timeout the user
-    const timeoutDuration = config.timeoutDuration * 60 * 60 * 1000; // Convert hours to milliseconds
-    const timeoutUntil = new Date(Date.now() + timeoutDuration);
+    // Mute the user by adding mute role
+    const muteDuration = (config.muteDuration || config.timeoutDuration || 1) * 60 * 60 * 1000; // Convert hours to milliseconds
+    const muteUntil = new Date(Date.now() + muteDuration);
 
     try {
-      await message.member.timeout(timeoutDuration, `Auto-mod: Menggunakan keyword terlarang (${foundKeywords.join(', ')})`);
-    } catch (timeoutError) {
-      console.error('Failed to timeout user:', timeoutError.message);
+      await message.member.roles.add(config.muteRoleId, `Auto-mod: Menggunakan keyword terlarang (${foundKeywords.join(', ')})`);
+      
+      // Schedule auto-unmute
+      setTimeout(async () => {
+        try {
+          // Re-fetch member to ensure we have latest data
+          const member = await message.guild.members.fetch(message.author.id);
+          if (member.roles.cache.has(config.muteRoleId)) {
+            await member.roles.remove(config.muteRoleId, 'Auto-mod: Mute duration expired');
+            console.log(`Auto-unmuted ${message.author.tag} after ${config.muteDuration || config.timeoutDuration || 1} hours`);
+          }
+        } catch (unmuteError) {
+          console.error('Failed to auto-unmute user:', unmuteError.message);
+        }
+      }, muteDuration);
+      
+    } catch (muteError) {
+      console.error('Failed to mute user:', muteError.message);
     }
 
     // Send log to log channel
     if (config.logChannel) {
       try {
         const logChannel = await message.guild.channels.fetch(config.logChannel);
+        const muteDurationHours = config.muteDuration || config.timeoutDuration || 1;
         
         const logEmbed = new EmbedBuilder()
           .setColor('#FF0000')
@@ -103,10 +125,10 @@ async function handleAutoMod(message) {
                 : channelInfo.mention, 
               inline: true 
             },
-            { name: 'Timeout Durasi', value: `${config.timeoutDuration} jam`, inline: true },
+            { name: 'Mute Durasi', value: `${muteDurationHours} jam`, inline: true },
             { name: 'Keyword Terdeteksi', value: `\`${foundKeywords.join('`, `')}\``, inline: false },
             { name: deletedThread ? 'Judul Thread' : 'Pesan Asli', value: deletedThread ? channelInfo.name : (messageContentBackup.length > 1024 ? messageContentBackup.substring(0, 1021) + '...' : messageContentBackup), inline: false },
-            { name: 'Timeout Hingga', value: `<t:${Math.floor(timeoutUntil.getTime() / 1000)}:F>`, inline: false }
+            { name: 'Mute Hingga', value: `<t:${Math.floor(muteUntil.getTime() / 1000)}:F>`, inline: false }
           )
           .setFooter({ text: `User ID: ${message.author.id}` })
           .setTimestamp();
@@ -119,6 +141,7 @@ async function handleAutoMod(message) {
 
     // Try to DM the user
     try {
+      const muteDurationHours = config.muteDuration || config.timeoutDuration || 1;
       const dmEmbed = new EmbedBuilder()
         .setColor('#FF0000')
         .setTitle('⚠️ Auto-Moderation Warning')
@@ -127,9 +150,9 @@ async function handleAutoMod(message) {
           `**${deletedThread ? 'Forum' : 'Channel'}:** ${deletedThread ? channelInfo.parent : channelInfo.mention}\n` +
           (deletedThread ? `**Judul Thread:** ${channelInfo.name}\n` : '') +
           `**Keyword Terdeteksi:** \`${foundKeywords.join('`, `')}\`\n` +
-          `**Timeout Durasi:** ${config.timeoutDuration} jam\n` +
-          `**Timeout Hingga:** <t:${Math.floor(timeoutUntil.getTime() / 1000)}:F>\n\n` +
-          `Harap patuhi peraturan server di masa mendatang.`
+          `**Mute Durasi:** ${muteDurationHours} jam\n` +
+          `**Mute Hingga:** <t:${Math.floor(muteUntil.getTime() / 1000)}:F>\n\n` +
+          `Anda hanya di-mute dari channel yang dimonitor. Harap patuhi peraturan server di masa mendatang.`
         )
         .setTimestamp();
 
