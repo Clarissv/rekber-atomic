@@ -160,11 +160,10 @@ async function handleMemberSelection(interaction) {
           'Scan kode QR di bawah ini\n\n' +
           '**E-Wallet / Rekening Bank:**\n' +
           '```\n' +
-          '• GoPay: 08158843876\n' +
-          '• OVO: 08158843876\n' +
-          '• DANA: 08158843876\n' +
-          '• Bank BCA: 7611612552 a.n. Konrad\n' +
-          '• Seabank: 901007767813 a.n. Konrad\n' +
+          '• 081357287427 Dana, OVO, Gopay\n' +
+          '• 4650769886 - BCA\n' +
+          '• 901872547726 - Seabank\n' +
+          '• Naufal Alif Prasetya\n' +
           '```\n'
         )
         .setImage(config.qrisImageUrl)

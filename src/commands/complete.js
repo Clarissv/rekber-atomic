@@ -73,12 +73,10 @@ module.exports = {
       const biayaTransfer = interaction.options.getInteger('biaya_transfer');
       const penerima = interaction.options.getString('penerima');
 
-      // Send data to Google Sheets via Google Apps Script
       try {
-        // Calculate Laba Bersih
+
         const labaBersih = biayaAdmin - biayaTransfer;
         
-        // Data format for Google Apps Script (direct object, no wrapper)
         const sheetData = {
           'Pembeli/Penjual 1': ticket.creatorId,
           'Pembeli/Penjual 2': ticket.otherPartyId,
@@ -110,7 +108,6 @@ module.exports = {
 
       const config = await GuildConfig.getConfig(interaction.guild.id);
 
-      // Send to completed log channel (public)
       if (config.completedLogChannel) {
         const logChannel = await interaction.guild.channels.fetch(config.completedLogChannel);
         
